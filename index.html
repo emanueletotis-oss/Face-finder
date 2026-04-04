@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#f8f8ff">
+    <title>Face Finder Pro v9</title>
+    
+    <!-- Librerie bloccate su versioni stabili -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <link rel="stylesheet" href="style.css">
+    
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script defer src="script.js"></script>
+</head>
+<body>
+
+    <!-- Loader Pulse -->
+    <div id="globalLoader" class="loader-overlay" style="display:none;">
+        <div class="pulse"></div>
+        <p id="loaderText">CARICAMENTO...</p>
+    </div>
+
+    <!-- SCHERMATA PRINCIPALE -->
+    <div id="mainScreen" class="screen active">
+        <div class="header">
+            <button id="btnTarget" class="btn btn-target">Target</button>
+            <button id="btnOpenDB" class="btn-db-toggle">
+                <svg width="55" height="55" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" fill="#1e90ff" stroke="black" stroke-width="2"/>
+                    <circle cx="50" cy="35" r="15" fill="white" />
+                    <path d="M25,80 Q25,55 50,55 Q75,55 75,80" fill="white" />
+                </svg>
+            </button>
+            <div class="right-group">
+                <button id="btnStart" class="btn btn-start">Start</button>
+                <button id="btnStop" class="btn btn-stop">Stop</button>
+            </div>
+        </div>
+
+        <div class="main-viewport">
+            <div class="camera-container">
+                <div id="placeholder" class="placeholder-content">
+                    <svg width="100" height="100" viewBox="0 0 24 24">
+                        <path fill="rgb(192,192,192)" d="M4,4H7L9,2H15L17,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4Z" />
+                        <circle cx="12" cy="12" r="5" fill="rgb(220, 220, 220)" stroke="rgb(192,192,192)" stroke-width="1"/>
+                        <circle cx="12" cy="12" r="3" fill="rgb(192,192,192)"/>
+                    </svg>
+                </div>
+                <video id="video" autoplay muted playsinline webkit-playsinline></video>
+                <canvas id="overlay"></canvas>
+                <div id="videoCurtain" class="video-curtain"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <button id="btnSwitch" class="btn btn-switch">Cambia Fotocamera</button>
+        </div>
+    </div>
+
+    <!-- SCHERMATA DATABASE -->
+    <div id="dbScreen" class="screen">
+        <div class="header-db">
+            <h2 class="title-db">Database</h2>
+            <button id="btnCloseDB" class="btn btn-stop">Indietro</button>
+        </div>
+        <div class="db-controls">
+            <input type="text" id="newName" placeholder="Nome...">
+            <button id="btnAddPhoto" class="btn-add-db">Aggiungi</button>
+        </div>
+        <div id="dbList" class="db-list"></div>
+    </div>
+
+    <!-- MODAL RITAGLIO -->
+    <div id="cropModal" class="modal" style="z-index: 3000;">
+        <div class="modal-content" style="max-width: 600px;">
+            <h3>Ritaglia Volto</h3>
+            <div class="crop-container"><img id="cropImage" src=""></div>
+            <button id="btnDoCrop" class="btn btn-start" style="width:100%; margin-top:15px;">CONFERMA</button>
+            <button id="btnCancelCrop" class="btn" style="width:100%; margin-top:10px; background:white;">ANNULLA</button>
+        </div>
+    </div>
+
+    <!-- MODAL GESTIONE PROFILO -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h3>Modifica Profilo</h3>
+            <input type="text" id="editNameField" class="input-edit">
+            <div id="photoStatusList" class="photo-status-list"></div>
+            <button id="btnAddNewPhoto" class="btn btn-start" style="width:100%; margin-top:10px;">Aggiungi Foto</button>
+            <button id="closeEditModal" class="btn" style="width:100%; margin-top:10px; background: white;">Esci</button>
+        </div>
+    </div>
+
+    <!-- MODAL SELEZIONE TARGET -->
+    <div id="targetModal" class="modal">
+        <div class="modal-content">
+            <h3>Scegli Target</h3>
+            <button id="uploadNewTarget" class="btn btn-target" style="width:100%; margin-bottom:15px;">Carica Foto Esterna</button>
+            <div id="dbTargetList" class="db-list-mini"></div>
+            <button id="closeTargetModal" class="btn" style="margin-top:15px; width:100%; background:#fff;">Annulla</button>
+        </div>
+    </div>
+
+    <input type="file" id="inputFile" accept="image/*" style="display:none">
+</body>
+</html>
