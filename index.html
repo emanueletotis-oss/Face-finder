@@ -6,11 +6,16 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#f8f8ff">
-    <title>Face Finder Pro v9</title>
     
-    <!-- Librerie bloccate su versioni stabili -->
+    <title>Face Finder Pro</title>
+
+    <!-- FIX ICONA: Questo forza l'uso della tua icona su iPhone/Android -->
+    <link rel="apple-touch-icon" href="icon.jpg">
+    <link rel="icon" type="image/jpeg" href="icon.jpg">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
     
     <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
@@ -21,7 +26,7 @@
     <!-- Loader Pulse -->
     <div id="globalLoader" class="loader-overlay" style="display:none;">
         <div class="pulse"></div>
-        <p id="loaderText">CARICAMENTO...</p>
+        <p id="loaderText">ELABORAZIONE...</p>
     </div>
 
     <!-- SCHERMATA PRINCIPALE -->
@@ -50,7 +55,7 @@
                         <circle cx="12" cy="12" r="3" fill="rgb(192,192,192)"/>
                     </svg>
                 </div>
-                <video id="video" autoplay muted playsinline webkit-playsinline></video>
+                <video id="video" autoplay muted playsinline webkit-playsinline poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></video>
                 <canvas id="overlay"></canvas>
                 <div id="videoCurtain" class="video-curtain"></div>
             </div>
@@ -74,8 +79,18 @@
         <div id="dbList" class="db-list"></div>
     </div>
 
+    <!-- MODAL SELEZIONE TARGET (Portato in alto nella struttura) -->
+    <div id="targetModal" class="modal modal-high">
+        <div class="modal-content">
+            <h3 style="margin-top:0">Scegli Target</h3>
+            <button id="uploadNewTarget" class="btn btn-target" style="width:100%; margin-bottom:15px;">Carica Foto Esterna</button>
+            <div id="dbTargetList" class="db-list-mini"></div>
+            <button id="closeTargetModal" class="btn" style="margin-top:15px; width:100%; background:#fff;">Annulla</button>
+        </div>
+    </div>
+
     <!-- MODAL RITAGLIO -->
-    <div id="cropModal" class="modal" style="z-index: 3000;">
+    <div id="cropModal" class="modal modal-max">
         <div class="modal-content" style="max-width: 600px;">
             <h3>Ritaglia Volto</h3>
             <div class="crop-container"><img id="cropImage" src=""></div>
@@ -85,23 +100,13 @@
     </div>
 
     <!-- MODAL GESTIONE PROFILO -->
-    <div id="editModal" class="modal">
+    <div id="editModal" class="modal modal-high">
         <div class="modal-content">
             <h3>Modifica Profilo</h3>
             <input type="text" id="editNameField" class="input-edit">
             <div id="photoStatusList" class="photo-status-list"></div>
             <button id="btnAddNewPhoto" class="btn btn-start" style="width:100%; margin-top:10px;">Aggiungi Foto</button>
             <button id="closeEditModal" class="btn" style="width:100%; margin-top:10px; background: white;">Esci</button>
-        </div>
-    </div>
-
-    <!-- MODAL SELEZIONE TARGET -->
-    <div id="targetModal" class="modal">
-        <div class="modal-content">
-            <h3>Scegli Target</h3>
-            <button id="uploadNewTarget" class="btn btn-target" style="width:100%; margin-bottom:15px;">Carica Foto Esterna</button>
-            <div id="dbTargetList" class="db-list-mini"></div>
-            <button id="closeTargetModal" class="btn" style="margin-top:15px; width:100%; background:#fff;">Annulla</button>
         </div>
     </div>
 

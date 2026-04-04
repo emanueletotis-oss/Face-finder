@@ -7,7 +7,6 @@ const cropModal = document.getElementById('cropModal');
 const targetModal = document.getElementById('targetModal');
 const cropImgElement = document.getElementById('cropImage');
 
-// DATABASE v9 - Caricamento locale dei modelli per stabilità eterna
 let db = JSON.parse(localStorage.getItem('faceDB_v9')) || [];
 let faceMatcher = null;
 let isScanning = false;
@@ -18,12 +17,9 @@ let activeEditIndex = -1;
 let cropper = null;
 let onCropComplete = null;
 
-// INIZIALIZZAZIONE
 async function init() {
     toggleLoader(true, "CARICAMENTO IA...");
-    // Importante: punta alla tua cartella locale /models
-    const MODEL_URL = './models'; 
-    
+    const MODEL_URL = './models'; // Assicurati che la cartella models esista sul tuo GitHub
     try {
         await Promise.all([
             faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
@@ -32,21 +28,17 @@ async function init() {
         ]);
         updateFaceMatcher();
         renderDB();
-        toggleLoader(false);
     } catch (e) {
-        console.error("Errore caricamento modelli:", e);
-        // Backup: se non li trovi in locale, prova il CDN ma avvisa l'utente
-        try {
-            await faceapi.nets.ssdMobilenetv1.loadFromUri('https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights');
-            await faceapi.nets.faceLandmark68Net.loadFromUri('https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights');
-            await faceapi.nets.faceRecognitionNet.loadFromUri('https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights');
-            updateFaceMatcher();
-            renderDB();
-            toggleLoader(false);
-        } catch (err) {
-            toggleLoader(true, "ERRORE CRITICO: FILE IA MANCANTI.");
-        }
+        // Fallback se i modelli locali falliscono
+        await Promise.all([
+            faceapi.nets.ssdMobilenetv1.loadFromUri('https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights'),
+            faceapi.nets.faceLandmark68Net.loadFromUri('https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights'),
+            faceapi.nets.faceRecognitionNet.loadFromUri('https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights')
+        ]);
+        updateFaceMatcher();
+        renderDB();
     }
+    toggleLoader(false);
 }
 init();
 
@@ -76,7 +68,7 @@ function calculateEfficacy(photos) {
     return { text: `EFFICACIA: ${score}%`, class: "eff-low" };
 }
 
-// RITAGLIO
+// CROP LOGIC
 async function openCropper(file, callback) {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -101,11 +93,9 @@ document.getElementById('btnDoCrop').onclick = () => {
     }, 'image/jpeg', 0.9);
 };
 
-document.getElementById('btnCancelCrop').onclick = () => {
-    cropModal.style.display = 'none';
-};
+document.getElementById('btnCancelCrop').onclick = () => { cropModal.style.display = 'none'; };
 
-// AZIONI DB
+// DB ACTIONS
 document.getElementById('btnAddPhoto').onclick = () => {
     const name = document.getElementById('newName').value;
     if (!name) return alert("Inserisci un nome.");
@@ -158,6 +148,12 @@ window.openEditModal = (idx) => {
     document.getElementById('editModal').style.display = 'flex';
 };
 
+document.getElementById('editNameField').oninput = (e) => {
+    db[activeEditIndex].name = e.target.value;
+    localStorage.setItem('faceDB_v9', JSON.stringify(db));
+    renderDB();
+};
+
 window.removePhoto = (ui, pi) => {
     db[ui].photos.splice(pi, 1);
     if(db[ui].photos.length === 0) { db.splice(ui, 1); document.getElementById('editModal').style.display='none'; }
@@ -180,7 +176,6 @@ document.getElementById('closeEditModal').onclick = () => document.getElementByI
 async function startDetection() {
     const displaySize = { width: video.offsetWidth, height: video.offsetHeight };
     faceapi.matchDimensions(canvas, displaySize);
-    
     const loop = async () => {
         if (!isScanning) return;
         const detections = await faceapi.detectAllFaces(video).withFaceLandmarks().withFaceDescriptors();
@@ -228,7 +223,7 @@ document.getElementById('btnStart').onclick = async () => {
             video.style.opacity = "1"; 
             setTimeout(() => { curtain.style.display = 'none'; startDetection(); }, 600); 
         };
-    } catch (e) { isScanning = false; alert("ERRORE CAMERA: Permessi negati."); }
+    } catch (e) { isScanning = false; alert("ERRORE CAMERA."); }
 };
 
 document.getElementById('btnStop').onclick = () => {
@@ -240,7 +235,7 @@ document.getElementById('btnStop').onclick = () => {
     selectedTarget = null;
 };
 
-// TARGET & UI
+// TARGET & MODALS
 document.getElementById('btnTarget').onclick = () => {
     targetModal.style.display = 'flex';
     const l = document.getElementById('dbTargetList');
@@ -248,12 +243,15 @@ document.getElementById('btnTarget').onclick = () => {
         db.map((u, i) => `<div class="mini-item" onclick="selT(${i})">👤 ${u.name}</div>`).join('');
 };
 
-window.selT = (i) => { selectedTarget = i !== null ? db[i] : null; targetModal.style.display = 'none'; };
+window.selT = (i) => { 
+    selectedTarget = i !== null ? db[i] : null; 
+    targetModal.style.display = 'none'; 
+};
 
 document.getElementById('uploadNewTarget').onclick = () => {
+    targetModal.style.display = 'none';
     inputFile.onchange = (e) => {
         const file = e.target.files[0]; if(!file) return;
-        targetModal.style.display = 'none';
         openCropper(file, async (blob) => {
             toggleLoader(true, "ANALISI...");
             const img = await faceapi.bufferToImage(blob);
@@ -273,3 +271,4 @@ document.getElementById('btnSwitch').onclick = () => {
     if(isScanning) document.getElementById('btnStart').click(); 
 };
 window.delP = (i) => { if(confirm("Eliminare profilo?")) { db.splice(i, 1); localStorage.setItem('faceDB_v9', JSON.stringify(db)); updateFaceMatcher(); renderDB(); } };
+document.getElementById('closeTargetModal').onclick = () => targetModal.style.display = 'none';
